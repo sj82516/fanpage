@@ -59,34 +59,38 @@ router.post("/webhook", async function (ctx, next) {
                         }
                     });
                 } else {
-                    e.changes.map(async c => {
-                        // 判斷是否為留言型別
-                        if (c.value && c.value.comment_id && c.value.verb === 'add' && c.value.sender_id !== page_id) {
-                            // 避免重複寄送，自己用Array存
-                            if (postArr.find(p => p == c.value.comment_id)) return
-                            postArr.push(c.value.comment_id)
+                    entry.changes.map(async c => {
+                        try {
+                            // 判斷是否為留言型別
+                            if (c.value && c.value.comment_id && c.value.verb === 'add' && c.value.sender_id !== page_id) {
+                                // 避免重複寄送，自己用Array存
+                                if (postArr.find(p => p == c.value.comment_id)) return
+                                postArr.push(c.value.comment_id)
 
-                            // 用Messenger私訊回覆
-                            if (c.value.message == '私訊') return await axios.post("https://graph.facebook.com/v2.10/" + c.value.comment_id + "/private_replies?access_token=" + access_token, {
-                                message: "以私"
-                            })
+                                // 用Messenger私訊回覆
+                                if (c.value.message == '私訊') return await axios.post("https://graph.facebook.com/v2.10/" + c.value.comment_id + "/private_replies?access_token=" + access_token, {
+                                    message: "以私"
+                                })
 
-                            // 日期判斷
-                            let date = validator.toDate('' + c.value.message)
-                            if (date == null) return await axios.post("https://graph.facebook.com/v2.10/" + c.value.comment_id + "/comments?access_token=" + access_token, {
-                                message: "哈哈 UCCU，連日期都不會打的笨蛋是不被科學家接受的"
-                            })
-                            const histroyToday = "http://history.pansci.asia/search/" + (date.getMonth() + 1) + "%2F" + date.getDate()
+                                // 日期判斷
+                                let date = validator.toDate('' + c.value.message)
+                                if (date == null) return await axios.post("https://graph.facebook.com/v2.10/" + c.value.comment_id + "/comments?access_token=" + access_token, {
+                                    message: "哈哈 UCCU，連日期都不會打的笨蛋是不被科學家接受的"
+                                })
+                                const histroyToday = "http://history.pansci.asia/search/" + (date.getMonth() + 1) + "%2F" + date.getDate()
 
-                            // 爬蟲有成功找到訊息，回覆留言
-                            let response = await crawler(histroyToday)
-                            if (response != null && response != undefined) return await axios.post("https://graph.facebook.com/v2.10/" + c.value.comment_id + "/comments?access_token=" + access_token, {
-                                message: "這一天科學史上的大事:  \u000A" + response + "  \u000A ,更多詳情請看 " + histroyToday
-                            })
+                                // 爬蟲有成功找到訊息，回覆留言
+                                let response = await crawler(histroyToday)
+                                if (response != null && response != undefined) return await axios.post("https://graph.facebook.com/v2.10/" + c.value.comment_id + "/comments?access_token=" + access_token, {
+                                    message: "這一天科學史上的大事:  \u000A" + response + "  \u000A ,更多詳情請看 " + histroyToday
+                                })
 
-                            return await axios.post("https://graph.facebook.com/v2.10/" + c.value.comment_id + "/comments?access_token=" + access_token, {
-                                message: "科學家都在打盹，沒什麼大事，等你搞出大事告訴小編啊啊啊啊"
-                            })
+                                return await axios.post("https://graph.facebook.com/v2.10/" + c.value.comment_id + "/comments?access_token=" + access_token, {
+                                    message: "科學家都在打盹，沒什麼大事，等你搞出大事告訴小編啊啊啊啊"
+                                })
+                            }
+                        } catch (err) {
+                            console.error(err)
                         }
                     })
                 }
