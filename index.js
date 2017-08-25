@@ -39,6 +39,7 @@ router.get("/webhook", function (ctx, next) {
 // facebook webhook發送通知的路徑
 router.post("/webhook", async function (ctx, next) {
     var data = ctx.body;
+    console.log(JSON.stringify(data));
     try {
         // 只蒐集跟Page相關的通知
         if (data.object === 'page') {
@@ -77,6 +78,7 @@ router.post("/webhook", async function (ctx, next) {
                                 if (date == null) return await axios.post("https://graph.facebook.com/v2.10/" + c.value.comment_id + "/comments?access_token=" + access_token, {
                                     message: "哈哈 UCCU，連日期都不會打的笨蛋是不被科學家接受的"
                                 })
+
                                 const histroyToday = "http://history.pansci.asia/search/" + (date.getMonth() + 1) + "%2F" + date.getDate()
 
                                 // 爬蟲有成功找到訊息，回覆留言
