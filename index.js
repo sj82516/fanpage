@@ -20,6 +20,10 @@ const page_id = config.page_id
 let postArr = []
 
 app.use(bodyParser())
+app.use(async(ctx, next) => {
+    ctx.body = ctx.request.body
+    await next()
+})
 
 // facebook 驗證webhook用，不用改，只需要注意verify_token
 router.get("/webhook", function (ctx, next) {
@@ -29,7 +33,7 @@ router.get("/webhook", function (ctx, next) {
     if (hub_verify_token === verify_token) {
         return ctx.body = challenge
     }
-    return 
+    return
 })
 
 // facebook webhook發送通知的路徑
